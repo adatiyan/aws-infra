@@ -24,10 +24,16 @@ resource "aws_route_table" "public_rt" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.webapp_igw.id
   }
+  tags = {
+    Name = "public_route_table-${aws_vpc.webapp_vpc.id}"
+  }
 }
 
 resource "aws_route_table" "private_rt" {
   vpc_id = aws_vpc.webapp_vpc.id
+  tags = {
+    Name = "private_route_table-${aws_vpc.webapp_vpc.id}"
+  }
 }
 
 
@@ -39,20 +45,27 @@ resource "aws_route_table" "private_rt" {
 
 
 resource "aws_subnet" "public_subnet" {
-  count             = 3
+  count             = local.no_of_subnets
   cidr_block        = cidrsubnet(aws_vpc.webapp_vpc.cidr_block, 8, count.index)
   vpc_id            = aws_vpc.webapp_vpc.id
   availability_zone = data.aws_availability_zones.available.names[count.index]
+   tags = {
+    Name = "public_subnet-${count.index + 1}"
+  }
 }
 
 resource "aws_subnet" "private_subnet" {
-  count             = 3
-  cidr_block        = cidrsubnet(aws_vpc.webapp_vpc.cidr_block, 8, count.index + 3)
+  count             = local.no_of_subnets
+  cidr_block        = cidrsubnet(aws_vpc.webapp_vpc.cidr_block, 8, count.index + local.no_of_subnets))
   vpc_id            = aws_vpc.webapp_vpc.id
   availability_zone = data.aws_availability_zones.available.names[count.index]
+    tags = {
+    Name = "private_subnet-${count.index + 1}"
+  }
 }
 
 locals {
+  no_of_subnets = min(var.aws_subnet_count, length(data.aws_availability_zones.available.names))
   public_subnet_ids = aws_subnet.public_subnet.*.id
   private_subnet_ids = aws_subnet.private_subnet.*.id
 }

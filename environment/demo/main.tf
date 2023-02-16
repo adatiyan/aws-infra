@@ -20,6 +20,6 @@ module "web_app" {
   cidr_name    = var.cidr_name
   vpc_tag_name = var.vpc_tag_name
   aws_region      = var.aws_region
-
+  aws_subnet_count = var.aws_subnet_count
 }
 

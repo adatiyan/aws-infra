@@ -14,3 +14,8 @@ variable "aws_region" {
   description = "aws region name"
   type        = string
 }
+variable "aws_subnet_count" {
+  description = "aws subnet count"
+  type        = number
+}
+
