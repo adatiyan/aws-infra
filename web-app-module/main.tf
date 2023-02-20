@@ -56,7 +56,7 @@ resource "aws_subnet" "public_subnet" {
 
 resource "aws_subnet" "private_subnet" {
   count             = local.no_of_subnets
-  cidr_block        = cidrsubnet(aws_vpc.webapp_vpc.cidr_block, 8, count.index + local.no_of_subnets))
+  cidr_block        = cidrsubnet(aws_vpc.webapp_vpc.cidr_block, 8, (count.index + local.no_of_subnets))
   vpc_id            = aws_vpc.webapp_vpc.id
   availability_zone = data.aws_availability_zones.available.names[count.index]
     tags = {
