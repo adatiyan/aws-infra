@@ -21,5 +21,7 @@ module "web_app" {
   vpc_tag_name = var.vpc_tag_name
   aws_region      = var.aws_region
   aws_subnet_count = var.aws_subnet_count
+  my_ip            = var.my_ip
+  my_ami           = var.my_ami
 }
 

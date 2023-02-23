@@ -83,3 +83,67 @@ resource "aws_route_table_association" "private_subnet_association" {
 }
 
 
+# Define the security group resource
+resource "aws_security_group" "ec2-sg" {
+  name_prefix = "ec2-sg"              # Set the name prefix for the security group
+  vpc_id      = aws_vpc.webapp_vpc.id # Set the ID of the VPC to create the security group in
+
+  # Define inbound rules
+  ingress {
+    from_port   = 22 # Allow SSH traffic
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.my_ip] # Allow traffic from all IP addresses
+  }
+
+  ingress {
+    from_port   = 443 # Allow SSH traffic
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Allow traffic from all IP addresses
+  }
+
+  ingress {
+    from_port   = 80 # Allow HTTP traffic
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Allow traffic from all IP addresses
+  }
+  ingress {
+    from_port   = 5050 # Allow HTTP traffic
+    to_port     = 5050
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Allow traffic from all IP addresses
+  }
+
+  # Define outbound rules
+  egress {
+    from_port   = 0 # Allow all outbound traffic
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"] # Allow traffic to all IP addresses
+  }
+
+  tags = {
+    Name = "ec2-sg-${timestamp()}" # Set the name tag for the security group
+  }
+}
+resource "aws_instance" "webapp_instance" {
+  ami             = var.my_ami                     # Set the ID of the Amazon Machine Image to use
+  instance_type   = "t2.micro"                     # Set the instance type
+  key_name        = "ec2"                          # Set the key pair to use for SSH access
+  security_groups = [aws_security_group.ec2-sg.id] # Set the security group to attach to the instance
+  subnet_id       = local.public_subnet_ids[0]     # Set the ID of the subnet to launch the instance in
+  # Enable protection against accidental termination
+  disable_api_termination = false
+  # Set the root volume size and type
+  root_block_device {
+    volume_size = 50   # Replace with your preferred root volume size (in GB)
+    volume_type = "gp2" # Replace with your preferred root volume type (e.g. "gp2", "io1", etc.)
+  }
+  # Allocate a public IPv4 address
+  associate_public_ip_address = true
+  tags = {
+    Name = "webapp-instance-${timestamp()}" # Set the name tag for the instance
+  }
+}
