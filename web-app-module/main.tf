@@ -125,7 +125,6 @@ resource "aws_security_group" "ec2-sg" {
   #   protocol    = "-1"
   #   cidr_blocks = ["0.0.0.0/0"] # Allow traffic to all IP addresses
   # }
-
   tags = {
     Name = "ec2-sg-${timestamp()}" # Set the name tag for the security group
   }
@@ -146,6 +145,7 @@ resource "aws_instance" "webapp_instance" {
   }
   # Allocate a public IPv4 address
   # associate_public_ip_address = true
+
   tags = {
     Name = "webapp-instance-${timestamp()}" # Set the name tag for the instance
   }
