@@ -112,8 +112,8 @@ resource "aws_security_group" "ec2-sg" {
     cidr_blocks = ["0.0.0.0/0"] # Allow traffic from all IP addresses
   }
   ingress {
-    from_port   = 5080 # Allow HTTP traffic
-    to_port     = 5080
+    from_port   = 5050 # Allow HTTP traffic
+    to_port     = 5050
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"] # Allow traffic from all IP addresses
   }
