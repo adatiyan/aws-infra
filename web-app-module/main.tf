@@ -1,5 +1,4 @@
 
-
 # Create a VPC
 resource "aws_vpc" "webapp_vpc" {
   cidr_block = var.cidr_name
@@ -112,14 +111,11 @@ resource "aws_security_group" "app_sg" {
     cidr_blocks = ["0.0.0.0/0"] # Allow traffic from all IP addresses
   }
   ingress {
-
-    from_port   = 5050# Allow HTTP traffic
+    from_port   = 5050 # Allow HTTP traffic
     to_port     = 5050
-
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"] # Allow traffic from all IP addresses
   }
-
 
 
   # egress {
@@ -147,6 +143,7 @@ resource "aws_security_group" "app_sg" {
     to_port     = 3306
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
 
   tags = {
     Name = "ec2-sg-${timestamp()}" # Set the name tag for the security group
@@ -209,7 +206,6 @@ resource "aws_instance" "webapp_instance" {
   instance_type          = "t2.micro"                     # Set the instance type
   key_name               = "ec2"                          # Set the key pair to use for SSH access
   vpc_security_group_ids = [aws_security_group.app_sg.id] # Set the security group to attach to the instance
-
   subnet_id              = local.public_subnet_ids[0]    # Set the ID of the subnet to launch the instance in
   # Enable protection against accidental termination
   disable_api_termination = false
@@ -249,22 +245,11 @@ sudo systemctl daemon-reload
 sudo systemctl start webservice.service
 sudo systemctl enable webservice.service
   EOF
-  server.port=5080
-  spring.datasource.url="jdbc:mysql://${aws_db_instance.rds_instance.endpoint}/${aws_db_instance.rds_instance.db_name}"
-  spring.datasource.username=${aws_db_instance.rds_instance.username}
-  spring.datasource.password=${aws_db_instance.rds_instance.password}
-  spring.jpa.hibernate.ddl-auto=update
-  aws.s3.bucketName=${aws_s3_bucket.s3_bucket.bucket} > /home/ec2-user/application.properties
 
-  sudo systemctl daemon-reload
-  sudo systemctl start webservice.service
-  sudo systemctl enable webservice.service
-  EOF*/
   tags = {
     Name = "webapp-instance-${timestamp()}" # Set the name tag for the instance
   }
 }
-
 
 resource "random_pet" "rg" {
   keepers = {
@@ -289,6 +274,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "s3b_lifecycle" {
   rule {
     id     = "rule-1"
     status = "Enabled"
+
     transition {
       days          = 30
       storage_class = "STANDARD_IA"
@@ -475,4 +461,3 @@ resource "aws_db_instance" "rds_instance" {
 # resource "aws_iam_instance_profile" "ec2_profile" {
 #   role = aws_iam_role.ec2_role.name
 # }
-
