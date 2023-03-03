@@ -225,7 +225,7 @@ sudo chown ec2-user:ec2-user application.properties
 sudo chmod 775 application.properties
 echo "aws.region=${var.aws_region}" >> application.properties
 echo "aws.s3.bucketName=${aws_s3_bucket.s3b.bucket}" >> application.properties
-echo "server.port=5080" >> application.properties
+echo "server.port=5050" >> application.properties
 echo "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver" >> application.properties
 echo "spring.datasource.url=jdbc:mysql://${aws_db_instance.rds_instance.endpoint}/${aws_db_instance.rds_instance.db_name}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC" >> application.properties
 echo "spring.datasource.username=${aws_db_instance.rds_instance.username}" >> application.properties
@@ -305,7 +305,7 @@ resource "aws_iam_policy" "policy" {
     "Version" : "2012-10-17"
     "Statement" : [
       {
-        "Action" : ["s3:DeleteObject", "s3:PutObject", "s3:GetObject", "s3:ListAllMyBuckets"]
+        "Action" : ["s3:DeleteObject", "s3:PutObject", "s3:GetObject", "s3:ListAllMyBuckets","s3:ListBucket"]
         "Effect" : "Allow"
         "Resource" : ["arn:aws:s3:::${aws_s3_bucket.s3b.bucket}",
           "arn:aws:s3:::${aws_s3_bucket.s3b.bucket}/*"]
