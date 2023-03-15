@@ -31,4 +31,5 @@ module "web_app" {
   db_password       = var.db_password
   db_public_access  = var.db_public_access
   db_multiaz        = var.db_multiaz
+  domain_name       = var.domain_name
 }

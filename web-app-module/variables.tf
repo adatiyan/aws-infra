@@ -64,5 +64,9 @@ variable "db_multiaz" {
   description = "DB multi AZ"
   type        = bool
 }
+variable "domain_name" {
+  description = "Hosted Zone"
+  type = string
+}
 
 
