@@ -229,9 +229,9 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "s3b_encryption" {
 resource "aws_s3_bucket_public_access_block" "s3_block" {
   bucket              = aws_s3_bucket.s3b.id
   block_public_acls   = true
-  block_public_policy = true
-  ignore_public_acls  = true
-  restrict_public_buckets = true
+  block_public_policy = true
+  ignore_public_acls  = true
+  restrict_public_buckets = true
 }
 resource "aws_iam_policy" "policy" {
   name        = "WebAppS3"
@@ -331,7 +331,7 @@ data "aws_route53_zone" "hosted_zone" {
 # Create Route53 record
 resource "aws_route53_record" "hosted_zone_record" {
   zone_id = data.aws_route53_zone.hosted_zone.zone_id
-  name = "${var.domain_name}"
+  name =  var.domain_name
   type = "A"
   ttl  = "60"
   records = [aws_instance.webapp_instance.public_ip]
