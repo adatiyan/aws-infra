@@ -1,6 +1,6 @@
 Name: Naiya Adatiya
 NEU ID: 002771371
-Updates on the assignment 4
+Updates on the assignment 6
 
 -Prerequisites
 Before you begin, make sure you have the following:
