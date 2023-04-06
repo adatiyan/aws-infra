@@ -213,7 +213,7 @@ resource "aws_launch_template" "lt" {
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
-      volume_size           = 20
+      volume_size           = 30
       volume_type           = "gp2"
       delete_on_termination = true
     }
@@ -249,21 +249,63 @@ resource "aws_autoscaling_group" "asg" {
   ]
 }
 
-resource "aws_autoscaling_policy" "asg_cpu_scale_up_policy" {
-  name                   = "csye6225-asg-cpu_scale_up"
+#Autoscaling policies - Scale up
+resource "aws_autoscaling_policy" "scale_up_policy" {
+  name        = "autoscaling_up_policy"
+  policy_type = "SimpleScaling"
+  scaling_adjustment     = "1"
   autoscaling_group_name = aws_autoscaling_group.asg.name
   adjustment_type        = "ChangeInCapacity"
-  policy_type            = "TargetTrackingScaling"
-  # scaling_adjustment     = 1
-  # CPU Utilization is above 20%
-  target_tracking_configuration {
-    predefined_metric_specification {
-      predefined_metric_type = "ASGAverageCPUUtilization"
-    }
-    target_value = 5.0
-  }
+  cooldown = 60
 }
 
+#Autoscaling policies - Scale down
+resource "aws_autoscaling_policy" "scale_down_policy" {
+  name        = "autoscaling_down_policy"
+  policy_type = "SimpleScaling"
+  scaling_adjustment     = "-1"
+  autoscaling_group_name = aws_autoscaling_group.asg.name
+  adjustment_type        = "ChangeInCapacity"
+  cooldown = 60
+}
+
+#Alarm for Scale up
+resource "aws_cloudwatch_metric_alarm" "alarm_scale_up" {
+  alarm_name                = "alarm_scale_up"
+  comparison_operator       = "GreaterThanOrEqualToThreshold"
+  evaluation_periods        = 2
+  metric_name               = "CPUUtilization"
+  namespace                 = "AWS/EC2"
+  period                    = 120
+  statistic                 = "Average"
+  threshold                 = 5
+  alarm_description         = "This metric monitors ec2 cpu utilization"
+  # insufficient_data_actions = []
+  dimensions = {
+    "AutoScalingGroupName" = aws_autoscaling_group.asg.name
+  }
+  actions_enabled = true
+  alarm_actions = [aws_autoscaling_policy.scale_up_policy.arn]
+}
+
+#Alarm for  scale down
+resource "aws_cloudwatch_metric_alarm" "alarm_scale_down" {
+  alarm_name                = "alarm_scale_down"
+  comparison_operator       = "LessThanOrEqualToThreshold"
+  evaluation_periods        = 2
+  metric_name               = "CPUUtilization"
+  namespace                 = "AWS/EC2"
+  period                    = 120
+  statistic                 = "Average"
+  threshold                 = 3
+  alarm_description         = "This metric monitors ec2 cpu utilization"
+  # insufficient_data_actions = []
+  dimensions = {
+    "AutoScalingGroupName" = aws_autoscaling_group.asg.name
+  }
+  actions_enabled = true
+  alarm_actions = [aws_autoscaling_policy.scale_down_policy.arn]
+}
 
 
 resource "aws_lb" "lb" {
@@ -301,62 +343,6 @@ resource "aws_lb_listener" "front_end" {
     type             = "forward"
   }
 }
-
-# resource "aws_instance" "webapp_instance" {
-#   ami                    = var.my_ami                     # Set the ID of the Amazon Machine Image to use
-#   instance_type          = "t2.micro"                     # Set the instance type
-#   key_name               = "ec2"                          # Set the key pair to use for SSH access
-#   vpc_security_group_ids = [aws_security_group.app_sg.id] # Set the security group to attach to the instance
-#   subnet_id              = local.public_subnet_ids[0]     # Set the ID of the subnet to launch the instance in
-#   # Enable protection against accidental termination
-#   disable_api_termination = false
-#   # Set the root volume size and type
-#   root_block_device {
-#     volume_size           = 20    # Replace with your preferred root volume size (in GB)
-#     volume_type           = "gp2" # Replace with your preferred root volume type (e.g. "gp2", "io1", etc.)
-#     delete_on_termination = true
-#   }
-#   depends_on           = [aws_db_instance.rds_instance]
-#   iam_instance_profile = aws_iam_instance_profile.iam_profile.name
-#   user_data            = <<EOF
-# #!/bin/bash
-# cd /home/ec2-user || return
-# touch application.properties
-# sudo chown ec2-user:ec2-user application.properties
-# sudo chmod 775 application.properties
-# echo "aws.region=${var.aws_region}" >> application.properties
-# echo "aws.s3.bucketName=${aws_s3_bucket.s3b.bucket}" >> application.properties
-# echo "server.port=5050" >> application.properties
-# echo "spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver" >> application.properties
-# echo "spring.datasource.url=jdbc:mysql://${aws_db_instance.rds_instance.endpoint}/${aws_db_instance.rds_instance.db_name}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC" >> application.properties
-# echo "spring.datasource.username=${aws_db_instance.rds_instance.username}" >> application.properties
-# echo "spring.datasource.password=${aws_db_instance.rds_instance.password}" >> application.properties
-# echo "#spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.MySQL5InnoDBDialect" >> application.properties
-# echo "spring.jpa.hibernate.ddl-auto=update" >> application.properties
-# echo "logging.file.path=/home/ec2-user" >> application.properties
-# echo "logging.file.name=/home/ec2-user/csye6225.log" >> application.properties
-# echo "publish.metrics=true" >> application.properties
-# echo "metrics.server.hostname=localhost" >> application.properties
-# echo "metrics.server.port=8125" >> application.properties
-# sudo chmod 770 /home/ec2-user/webapp-0.0.1-SNAPSHOT.jar
-# sudo cp /tmp/webservice.service /etc/systemd/system
-# sudo cp /tmp/cloudwatch-config.json /opt/cloudwatch-config.json
-# sudo chmod 770 /opt/cloudwatch-config.json
-# sudo chmod 770 /etc/systemd/system/webservice.service
-# sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-#     -a fetch-config \
-#     -m ec2 \
-#     -c file:/opt/cloudwatch-config.json \
-#     -s
-# sudo systemctl daemon-reload
-# sudo systemctl start webservice.service
-# sudo systemctl enable webservice.service
-#   EOF
-
-#   tags = {
-#     Name = "webapp-instance-${timestamp()}" # Set the name tag for the instance
-#   }
-# }
 
 resource "random_pet" "rg" {
   keepers = {
@@ -517,4 +503,3 @@ resource "aws_route53_record" "hosted_zone_record" {
   }
   # records = [aws_lb.lb.load_balancer_ip]
 }
-
