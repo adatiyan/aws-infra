@@ -66,3 +66,6 @@ Review the output to make sure there are no errors.
 Step 6: Destroy the infrastructure
 To destroy the infrastructure you created, run the command terraform destroy. This will remove all resources created by your Terraform code.
 
+For AWS Certficate Manager
+aws acm import-certificate --certificate fileb:///Users/naiyaadatiya/Downloads/demo_naiyaadatiya.me/demo_naiyaadatiya_me.crt --certificate-chain fileb:///Users/naiyaadatiya/Downloads/demo_naiyaadatiya.me/demo_naiyaadatiya_me.ca-bundle --private-key fileb:///Users/naiyaadatiya/Downloads/demo_naiyaadatiya.me/private.pem --profile demo
+
